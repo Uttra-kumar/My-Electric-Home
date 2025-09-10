@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              light: '#1e40af',
+              dark: '#3b82f6'
+            },
+            secondary: {
+              light: '#3b82f6',
+              dark: '#60a5fa'
+            },
+            accent: {
+              light: '#10b981',
+              dark: '#34d399'
+            },
+            dark: {
+              light: '#1f2937',
+              dark: '#f9fafb'
+            },
+            light: {
+              light: '#f9fafb',
+              dark: '#1f2937'
+            },
+            background: {
+              light: '#f3f4f6',
+              dark: '#111827'
+            },
+            card: {
+              light: '#ffffff',
+              dark: '#1f2937'
+            },
+            text: {
+              light: '#1f2937',
+              dark: '#f9fafb'
+            },
+            muted: {
+              light: '#6b7280',
+              dark: '#9ca3af'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    
+    * {
+      font-family: 'Inter', sans-serif;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dark .card:hover {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    
+    .calculator-btn {
+      transition: all 0.2s ease;
+    }
+    
+    .calculator-btn:active {
+      transform: scale(0.95);
+    }
+    
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      
+      to {
+        opacity: 1;
+      }
+    }
+    
+    .entry-row {
+      transition: background-color 0.2s ease;
+    }
+    
+    .entry-row:hover {
+      background-color: #f3f4f6;
+    }
+    
+    .dark .entry-row:hover {
+      background-color: #374151;
+    }
+    
+    /* Theme toggle switch */
+    .theme-toggle {
+      position: relative;
+      display: inline-block;
+      width: 60px;
+      height: 30px;
+    }
+    
+    .theme-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #1e40af;
+      border-radius: 34px;
+      transition: .4s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .4s;
+    }
+    
+    input:checked+.toggle-slider {
+      background-color: #3b82f6;
+    }
+    
+    input:checked+.toggle-slider:before {
+      transform: translateX(30px);
+    }
+    
+    .toggle-icons {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      padding: 0 8px;
+      pointer-events: none;
+    }
+    
+    .toggle-icons i {
+      color: white;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body class="bg-background-light text-text-light dark:bg-background-dark dark:text-text-dark min-h-screen p-4 md:p-6">
+  
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <header class="flex flex-col md:flex-row justify-between items-center mb-8 p-4 bg-card-light dark:bg-card-dark rounded-xl shadow-md">
+      <div>
+        <h1 class="text-2xl md:text-3xl font-bold text-primary-light dark:text-primary-dark">
+          <i class="fas fa-chart-line mr-2"></i  <a href="index.html">Financial Dashboard
+       </a> </h1>
+        <p class="text-muted-light dark:text-muted-dark">Track your purchases and remaining balance</p>
+      </div>
+      <div class="mt-4 md:mt-0 flex items-center">
+        <div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg mr-4">
+          <i class="fas fa-clock text-primary-light dark:text-primary-dark text-xl"></i>
+          <span id="currentTime" class="ml-2 font-medium">00:00:00</span>
+        </div>
+        <div class="bg-blue-100 dark:bg-blue-900/30 p-2 rounded-lg mr-4">
+          <i class="fas fa-calendar text-primary-light dark:text-primary-dark text-xl"></i>
+          <span id="currentDate" class="ml-2 font-medium">2023-10-30</span>
+        </div>
+        <div class="flex items-center ml-4">
+          <i class="fas fa-moon text-gray-600 dark:text-yellow-300 mr-2"></i>
+          <label class="theme-toggle">
+            <input type="checkbox" id="themeToggle">
+            <span class="toggle-slider"></span>
+            <div class="toggle-icons">
+              <i class="fas fa-moon"></i>
+              <i class="fas fa-sun"></i>
+            </div>
+          </label>
+          <i class="fas fa-sun text-yellow-400 dark:text-gray-400 ml-2"></i>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="card bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-md border-l-4 border-primary-light dark:border-primary-dark">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-muted-light dark:text-muted-dark font-medium">Purchase Value</h2>
+            <p id="purchaseValue" class="text-2xl font-bold text-primary-light dark:text-primary-dark mt-2">₹0.00</p>
+          </div>
+          <div class="bg-blue-100 dark:bg-blue-900/30 p-3 rounded-full">
+            <i class="fas fa-shopping-cart text-primary-light dark:text-primary-dark text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-md border-l-4 border-accent-light dark:border-accent-dark">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-muted-light dark:text-muted-dark font-medium">Remaining Value</h2>
+            <p id="remainingValue" class="text-2xl font-bold text-accent-light dark:text-accent-dark mt-2">₹0.00</p>
+          </div>
+          <div class="bg-green-100 dark:bg-green-900/30 p-3 rounded-full">
+            <i class="fas fa-wallet text-accent-light dark:text-accent-dark text-xl"></i>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card bg-card-light dark:bg-card-dark p-6 rounded-xl shadow-md border-l-4 border-secondary-light dark:border-secondary-dark">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-muted-light dark:text-muted-dark font-medium">Total Entries</h2>
+            <p id="totalEntries" class="text-2xl font-bold text-secondary-light dark:text-secondary-dark mt-2">0</p>
+          </div>
+          <div class="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-full">
+            <i class="fas fa-list text-secondary-light dark:text-secondary-dark text-xl"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Form Section -->
+      <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-6 flex items-center">
+          <i class="fas fa-plus-circle mr-2"></i> Add New Entry
+        </h2>
+        
+        <form id="dashboardForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="date" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Date</label>
+              <input type="date" id="date" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+            </div>
+            
+            <div>
+              <label for="day" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Day</label>
+              <select id="day" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+                <option value="">Select Day</option>
+                <option value="Monday">Monday</option>
+                <option value="Tuesday">Tuesday</option>
+                <option value="Wednesday">Wednesday</option>
+                <option value="Thursday">Thursday</option>
+                <option value="Friday">Friday</option>
+                <option value="Saturday">Saturday</option>
+                <option value="Sunday">Sunday</option>
+              </select>
+            </div>
+          </div>
+          
+          <div>
+            <label for="time" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Time</label>
+            <input type="time" id="time" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+          </div>
+          
+          <div>
+            <label for="description" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Description</label>
+            <input type="text" id="description" placeholder="Enter description" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+          </div>
+          
+          <div>
+            <label for="remaining" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Remaining Value (₹)</label>
+            <input type="number" id="remaining" placeholder="Enter remaining value" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+          </div>
+          
+          <button type="submit" class="w-full bg-primary-light dark:bg-primary-dark text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors flex items-center justify-center">
+            <i class="fas fa-plus-circle mr-2"></i> Add Entry
+          </button>
+        </form>
+      </div>
+      
+      <!-- Calculator Section -->
+      <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6">
+        <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-6 flex items-center">
+          <i class="fas fa-calculator mr-2"></i> Calculator
+        </h2>
+        
+        <input type="text" id="calcInput" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-4 text-right text-2xl font-semibold mb-4 bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" readonly>
+        
+        <div class="grid grid-cols-4 gap-3">
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('7')">7</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('8')">8</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('9')">9</button>
+          <button type="button" class="calculator-btn bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('/')">/</button>
+          
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('4')">4</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('5')">5</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('6')">6</button>
+          <button type="button" class="calculator-btn bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('*')">×</button>
+          
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('1')">1</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('2')">2</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('3')">3</button>
+          <button type="button" class="calculator-btn bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('-')">-</button>
+          
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('0')">0</button>
+          <button type="button" class="calculator-btn bg-gray-100 dark:bg-gray-700 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('.')">.</button>
+          <button type="button" class="calculator-btn bg-green-100 dark:bg-green-900/30 p-3 rounded-lg font-medium text-lg" onclick="calculate()">=</button>
+          <button type="button" class="calculator-btn bg-yellow-100 dark:bg-yellow-900/30 p-3 rounded-lg font-medium text-lg" onclick="appendCalc('+')">+</button>
+        </div>
+        
+        <button type="button" class="w-full mt-4 bg-red-500 text-white py-2 rounded-lg font-medium hover:bg-red-600 transition-colors" onclick="clearCalc()">
+          <i class="fas fa-trash-alt mr-2"></i> Clear
+        </button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+      <!-- Purchase-P Database Table -->
+      <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6 mt-8">
+        <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-6 flex items-center">
+          <i class="fas fa-database mr-2"></i> Purchase-P Database (Purchases)
+        </h2>
+        
+        <div class="database-table">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-700 text-left">
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">ID</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Date</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Day</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Time</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Description</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Amount(₹)</th>
+                
+              </tr>
+            </thead>
+            <tbody id="purchaseTable" class="divide-y divide-gray-200">
+              <!-- Purchase data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <p id="noPurchaseMessage" class="text-center text-dark/40 py-6">
+          No purchase data available.
+        </p>
+      </div>
+      
+      <!-- Purchase-R Database Table -->
+      <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6 mt-8">
+        <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-6 flex items-center">
+          <i class="fas fa-database mr-2"></i> Purchase-R Database (Remaining)
+        </h2>
+        
+        <div class="database-table">
+          <table class="w-full">
+            <thead>
+              <tr class="bg-gray-100 dark:bg-gray-700 text-left">
+                 <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">ID</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Date</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Day</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Time</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Description</th>
+                <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="remainingTable" class="divide-y divide-gray-200">
+              <!-- Remaining data will be populated here -->
+            </tbody>
+          </table>
+        </div>
+        
+        <p id="noRemainingMessage" class="text-center text-dark/40 py-6">
+          No remaining data available.
+        </p>
+      </div>
+    </div>
+    
+    <!-- Entries Table -->
+    <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-md p-6 mt-8">
+      <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-6 flex items-center">
+        <i class="fas fa-table mr-2"></i> Entries
+      </h2>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-100 dark:bg-gray-700 text-left">
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Date</th>
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Day</th>
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Time</th>
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Description</th>
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark">Remaining</th>
+              <th class="p-3 font-semibold text-muted-light dark:text-muted-dark text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="entriesTable" class="divide-y divide-gray-200 dark:divide-gray-700">
+            <!-- Entries will be populated here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <p id="noEntriesMessage" class="text-center text-muted-light dark:text-muted-dark py-6">
+        No entries yet. Add your first entry above.
+      </p>
+    </div>
+  </div>
+  
+  <!-- Edit Modal -->
+  <div id="editModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+    <div class="bg-card-light dark:bg-card-dark rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+      <h2 class="text-xl font-semibold text-primary-light dark:text-primary-dark mb-4">Edit Entry</h2>
+      <form id="editForm" class="space-y-4">
+        <input type="hidden" id="editId">
+        <div>
+          <label for="editDate" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Date</label>
+          <input type="date" id="editDate" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+        </div>
+        
+        <div>
+          <label for="editDay" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Day</label>
+          <select id="editDay" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+            <option value="Sunday">Sunday</option>
+          </select>
+        </div>
+        
+        <div>
+          <label for="editTime" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Time</label>
+          <input type="time" id="editTime" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+        </div>
+        
+        <div>
+          <label for="editDescription" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Description</label>
+          <input type="text" id="editDescription" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+        </div>
+        
+        <div>
+          <label for="editRemaining" class="block text-sm font-medium text-muted-light dark:text-muted-dark mb-1">Remaining Value (₹)</label>
+          <input type="number" id="editRemaining" class="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark focus:border-transparent bg-white dark:bg-gray-700 text-text-light dark:text-text-dark" required>
+        </div>
+        
+        <div class="flex justify-end space-x-3 pt-4">
+          <button type="button" onclick="closeEditModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 bg-primary-light dark:bg-primary-dark text-white rounded-lg font-medium">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                alert('Please log in to access this page.');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Initialize the page
+            initializePage();
+        });
+    const DB_CONFIG = {
+      Purchase: { name: 'Purchase-P', store: 'purchases', version: 4 },
+      Remaining: { name: 'Purchase-R', store: 'purchases', version: 4 },
+      Dashboard: { name: 'Purchase-D', store: 'dash', version: 4 }
+    };
+    
+    const currency = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' });
+    let editId = null;
+    
+    // Theme toggle functionality
+    const themeToggle = document.getElementById('themeToggle');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    // Check for saved theme preference or use OS preference
+    const currentTheme = localStorage.getItem('theme') || (prefersDarkScheme.matches ? 'dark' : 'light');
+    if (currentTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      themeToggle.checked = true;
+    }
+    
+    themeToggle.addEventListener('change', function() {
+      if (this.checked) {
+        document.documentElement.classList.add('dark');
+        localStorage.setItem('theme', 'dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        localStorage.setItem('theme', 'light');
+      }
+    });
+    
+    // Set current date and time
+    function setCurrentDateTime() {
+      const now = new Date();
+      
+      // Set current date
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      document.getElementById('date').value = `${year}-${month}-${day}`;
+      document.getElementById('currentDate').textContent = `${day}-${month}-${year}`;
+      
+      // Set current time
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('time').value = `${hours}:${minutes}`;
+      
+      // Set current day
+      const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      document.getElementById('day').value = days[now.getDay()];
+      
+      // Update clock
+      updateClock();
+    }
+    
+    // Update real-time clock
+    function updateClock() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+      document.getElementById('currentTime').textContent = timeStr;
+      setTimeout(updateClock, 1000);
+    }
+    
+    // Open DB helper
+    function openDB(config) {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(config.name, config.version);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(config.store)) {
+            db.createObjectStore(config.store, { keyPath: "id", autoIncrement: true });
+          }
+        };
+      });
+    }
+    
+    // Load and display Purchase-P
+    function openDB(config) {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(config.name, config.version);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = e => reject(e.target.error);
+        req.onupgradeneeded = e => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(config.store)) {
+            db.createObjectStore(config.store, { keyPath: "id", autoIncrement: true });
+          }
+        };
+      });
+    }
+    
+    // Load and display Purchase-P
+    async function loadPurchase() {
+      try {
+        const db = await openDB(DB_CONFIG.Purchase);
+        const tx = db.transaction(DB_CONFIG.Purchase.store, "readonly");
+        const store = tx.objectStore(DB_CONFIG.Purchase.store);
+        
+        const data = store.getAll();
+        
+        data.onsuccess = function() {
+          const ct = data.result; // <-- yaha array milta hai
+          
+          // Total value calculate
+          const val = ct.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+          document.getElementById("purchaseValue").textContent = currency.format(val);
+          
+          // Table ke liye
+          const tableBody = document.getElementById('purchaseTable');
+          tableBody.innerHTML = ""; // clear old data
+          
+          if (ct.length === 0) {
+            document.getElementById("noPurchaseMessage").classList.remove("hidden");
+            document.getElementById("purchaseTable").innerHTML = "";
+            return;
+          }
+          
+          document.getElementById("noPurchaseMessage").classList.add("hidden");
+          ct.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+          <tr class="entry-row fade-in">
+          <td class="p-3">${item.id || ''}</td>
+          <td class="p-3">${item.date || ''}</td>
+          <td class="p-3">${item.day || ''}</td>
+          <td class="p-3">${item.time || ''}</td>
+          <td class="p-3">${item.description || ''}</td>
+          <td class="p-3">${currency.format(Number(item.amount) || 0)}</td>
+        `;
+            tableBody.appendChild(row);
+          });
+        };
+        
+        data.onerror = function() {
+          console.error("Error reading data:", data.error);
+        };
+        
+      } catch (error) {
+        console.error("Error loading purchase data:", error);
+      }
+    }
+    
+    // Load and display Purchase-R
+    
+    async function loadRemaining() {
+      try {
+        const db = await openDB(DB_CONFIG.Remaining);
+        const tx = db.transaction(DB_CONFIG.Remaining.store, "readonly");
+        const store = tx.objectStore(DB_CONFIG.Remaining.store);
+        
+        const data = store.getAll();
+        
+        data.onsuccess = function() {
+          const ct = data.result; // <-- yaha array milta hai
+          
+          // Total value calculate
+          const val = ct.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+          document.getElementById("remainingValue").textContent = currency.format(val);
+          
+          // Table ke liye
+          const tableBody = document.getElementById('remainingTable');
+          tableBody.innerHTML = ""; // clear old data
+          
+          if (ct.length === 0) {
+            document.getElementById("noRemainingMessage").classList.remove("hidden");
+            document.getElementById("remainingTable").innerHTML = "";
+            return;
+          }
+          
+          document.getElementById("noRemainingMessage").classList.add("hidden");
+          ct.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+          <tr class="entry-row fade-in">
+            <td class="p-3">${item.id || ''}</td>
+          <td class="p-3">${item.date || ''}</td>
+          <td class="p-3">${item.day || ''}</td>
+          <td class="p-3">${item.time || ''}</td>
+          <td class="p-3">${item.description || ''}</td>
+          <td class="p-3">${currency.format(Number(item.amount) || 0)}</td>
+        `;
+            tableBody.appendChild(row);
+          });
+        };
+        
+        data.onerror = function() {
+          console.error("Error reading data:", data.error);
+        };
+        
+      } catch (error) {
+        console.error("Error loading remaining data:", error);
+      }
+    }
+    
+    // Save Dashboard Entry
+    document.getElementById("dashboardForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const entry = {
+        date: document.getElementById("date").value,
+        day: document.getElementById("day").value,
+        time: document.getElementById("time").value,
+        description: document.getElementById("description").value,
+        remaining: Number(document.getElementById("remaining").value)
+      };
+      
+      try {
+        const db = await openDB(DB_CONFIG.Dashboard);
+        const tx = db.transaction(DB_CONFIG.Dashboard.store, "readwrite");
+        const store = tx.objectStore(DB_CONFIG.Dashboard.store);
+        
+        if (editId) {
+          entry.id = editId;
+          store.put(entry);
+          editId = null;
+        } else {
+          store.add(entry);
+        }
+        
+        tx.oncomplete = () => {
+          e.target.reset();
+          setCurrentDateTime();
+          loadDashboard();
+          showNotification('Entry added successfully!', 'success');
+        };
+      } catch (error) {
+        showNotification('Error adding entry!', 'error');
+        console.error("Error saving entry:", error);
+      }
+    };
+    
+    // Load Dashboard Entries
+    async function loadDashboard() {
+      try {
+        const db = await openDB(DB_CONFIG.Dashboard);
+        const tx = db.transaction(DB_CONFIG.Dashboard.store, "readonly");
+        const store = tx.objectStore(DB_CONFIG.Dashboard.store);
+        store.getAll().onsuccess = e => {
+          const entries = e.target.result;
+          document.getElementById("totalEntries").textContent = entries.length;
+          
+          if (entries.length === 0) {
+            document.getElementById("noEntriesMessage").classList.remove("hidden");
+            document.getElementById("entriesTable").innerHTML = "";
+            return;
+          }
+          
+          document.getElementById("noEntriesMessage").classList.add("hidden");
+          
+          const rows = entries.map(item => `
+            <tr class="entry-row fade-in">
+              <td class="p-3">${formatDate(item.date)}</td>
+              <td class="p-3">${item.day}</td>
+              <td class="p-3">${item.time}</td>
+              <td class="p-3">${item.description}</td>
+              <td class="p-3 font-medium">${currency.format(item.remaining)}</td>
+              <td class="p-3">
+                <div class="flex justify-center space-x-2">
+                  <button class="bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition-colors" onclick="openEditModal(${item.id})">
+                    <i class="fas fa-edit mr-1"></i> Edit
+                  </button>
+                  <button class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition-colors" onclick="confirmDelete(${item.id})">
+                    <i class="fas fa-trash-alt mr-1"></i> Delete
+                  </button>
+                </div>
+              </td>
+            </tr>
+          `).join("");
+          
+          document.getElementById("entriesTable").innerHTML = rows;
+        };
+      } catch (error) {
+        console.error("Error loading dashboard entries:", error);
+      }
+    }
+    
+    // Format date to DD-MM-YYYY
+    function formatDate(dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}-${month}-${year}`;
+    }
+    
+    // Delete Entry with confirmation
+    function confirmDelete(id) {
+      if (confirm("Are you sure you want to delete this entry?")) {
+        deleteEntry(id);
+      }
+    }
+    
+    // Delete Entry
+    async function deleteEntry(id) {
+      try {
+        const db = await openDB(DB_CONFIG.Dashboard);
+        const tx = db.transaction(DB_CONFIG.Dashboard.store, "readwrite");
+        tx.objectStore(DB_CONFIG.Dashboard.store).delete(id);
+        tx.oncomplete = () => {
+          loadDashboard();
+          showNotification('Entry deleted successfully!', 'success');
+        };
+      } catch (error) {
+        showNotification('Error deleting entry!', 'error');
+        console.error("Error deleting entry:", error);
+      }
+    }
+    
+    // Open Edit Modal
+    async function openEditModal(id) {
+      try {
+        const db = await openDB(DB_CONFIG.Dashboard);
+        const tx = db.transaction(DB_CONFIG.Dashboard.store, "readonly");
+        const store = tx.objectStore(DB_CONFIG.Dashboard.store);
+        store.get(id).onsuccess = e => {
+          const item = e.target.result;
+          if (item) {
+            document.getElementById("editId").value = item.id;
+            document.getElementById("editDate").value = item.date;
+            document.getElementById("editDay").value = item.day;
+            document.getElementById("editTime").value = item.time;
+            document.getElementById("editDescription").value = item.description;
+            document.getElementById("editRemaining").value = item.remaining;
+            
+            document.getElementById("editModal").classList.remove("hidden");
+          }
+        };
+      } catch (error) {
+        console.error("Error opening edit modal:", error);
+      }
+    }
+    
+    // Close Edit Modal
+    function closeEditModal() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
+    
+    // Submit Edit Form
+    document.getElementById("editForm").onsubmit = async (e) => {
+      e.preventDefault();
+      const id = Number(document.getElementById("editId").value);
+      const updatedEntry = {
+        id: id,
+        date: document.getElementById("editDate").value,
+        day: document.getElementById("editDay").value,
+        time: document.getElementById("editTime").value,
+        description: document.getElementById("editDescription").value,
+        remaining: Number(document.getElementById("editRemaining").value)
+      };
+      
+      try {
+        const db = await openDB(DB_CONFIG.Dashboard);
+        const tx = db.transaction(DB_CONFIG.Dashboard.store, "readwrite");
+        tx.objectStore(DB_CONFIG.Dashboard.store).put(updatedEntry);
+        
+        tx.oncomplete = () => {
+          closeEditModal();
+          loadDashboard();
+          showNotification('Entry updated successfully!', 'success');
+        };
+      } catch (error) {
+        showNotification('Error updating entry!', 'error');
+        console.error("Error updating entry:", error);
+      }
+    };
+    
+    // Calculator functions
+    function appendCalc(value) {
+      document.getElementById("calcInput").value += value;
+    }
+    
+    function clearCalc() {
+      document.getElementById("calcInput").value = "";
+    }
+    
+    function calculate() {
+      try {
+        const result = eval(document.getElementById("calcInput").value);
+        document.getElementById("calcInput").value = result;
+      } catch (e) {
+        document.getElementById("calcInput").value = "Error";
+      }
+    }
+    
+    // Show notification
+    function showNotification(message, type) {
+      // Create notification element
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white font-medium z-50 fade-in ${
+        type === 'success' ? 'bg-green-500' : 'bg-red-500'
+      }`;
+      notification.textContent = message;
+      
+      // Add to page
+      document.body.appendChild(notification);
+      
+      // Remove after 3 seconds
+      setTimeout(() => {
+        notification.remove();
+      }, 3000);
+    }
+    
+    // Close modal if clicked outside
+    document.getElementById("editModal").addEventListener("click", (e) => {
+      if (e.target.id === "editModal") {
+        closeEditModal();
+      }
+    });
+    
+    // Initialize the dashboard
+    setCurrentDateTime();
+    loadPurchase();
+    loadRemaining();
+    loadDashboard();
+  </script>
+</body>
+
+</html>
