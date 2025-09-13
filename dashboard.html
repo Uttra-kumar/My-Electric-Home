@@ -540,7 +540,7 @@
     // Update real-time clock
     function updateClock() {
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+      const timeStr = now.toLocaleTimeString('en-US', { hour12: true });
       document.getElementById('currentTime').textContent = timeStr;
       setTimeout(updateClock, 1000);
     }
