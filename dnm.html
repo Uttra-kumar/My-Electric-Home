@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Monthly Attendance System</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #4b79a1, #283e51);
+    margin: 0;
+    padding: 30px;
+    color: #fff;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: auto;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+  }
+
+  h1 {
+    text-align: center;
+    font-size: 34px;
+    margin-bottom: 20px;
+  }
+
+  .calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .day {
+    background: rgba(255,255,255,0.2);
+    padding: 22px;
+    text-align: center;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.25s;
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .day.present { background: rgba(0,255,0,0.4); }
+  .day.absent { background: rgba(255,0,0,0.4); }
+  .day.leave { background: rgba(255,255,0,0.4); color:#000; }
+
+  .info-cards {
+    margin-top: 25px;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.2);
+    padding: 20px;
+    border-radius: 12px;
+    width: 30%;
+    text-align:center;
+    font-size: 20px;
+  }
+
+  #statusBox {
+    display: none;
+    margin-top: 25px;
+    background: rgba(255,255,255,0.2);
+    padding: 20px;
+    border-radius: 12px;
+    text-align:center;
+  }
+
+  button {
+    padding: 12px 18px;
+    border-radius: 10px;
+    border: none;
+    background: #00c6ff;
+    cursor: pointer;
+    font-size: 17px;
+    margin: 10px;
+  }
+
+  .btn-present { background:#00ff88; }
+  .btn-absent { background:#ff5555; }
+  .btn-leave { background:#ffd900; color:#000; }
+
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Monthly Attendance Calendar</h1>
+
+  <h2 id="monthYear"></h2>
+  <div style="text-align:center; margin-top:10px;">
+    <button onclick="prevMonth()">◀ Previous</button>
+    <button onclick="nextMonth()">Next ▶</button>
+  </div>
+
+  <div class="calendar" id="calendarGrid"></div>
+
+  <div id="statusBox">
+    <h3>Date: <span id="selectedDate"></span></h3>
+
+    <button class="btn-present" onclick="setStatus('Present')">Present</button>
+    <button class="btn-absent" onclick="setStatus('Absent')">Absent</button>
+    <button class="btn-leave" onclick="setStatus('Leave')">Leave</button>
+    <button style="background:#444;color:#fff;" onclick="removeStatus()">Remove</button>
+  </div>
+
+  <div class="info-cards">
+    <div class="card">Total Days: <span id="totalDays">0</span></div>
+    <div class="card" style="color:#00ff88;font-weight:bold;">Present: <span id="totalPresent">0</span></div>
+    <div class="card" style="color:#ff5555;font-weight:bold;">Absent: <span id="totalAbsent">0</span></div>
+    <div class="card" style="color:yellow;font-weight:bold;">Leaves: <span id="totalLeave">0</span></div>
+  </div>
+    
+    
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const supabaseUrl = "YOUR_SUPABASE_URL";
+  const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
+  const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+  const calendarGrid = document.getElementById('calendarGrid');
+  const monthYear = document.getElementById('monthYear');
+  const statusBox = document.getElementById('statusBox');
+  const selectedDateSpan = document.getElementById('selectedDate');
+  const totalDays = document.getElementById('totalDays');
+  const totalPresent = document.getElementById('totalPresent');
+  const totalAbsent = document.getElementById('totalAbsent');
+
+  let selectedDate = null;
+  let attendance = {};
+
+  const today = new Date();
+  let year = today.getFullYear();
+  let month = today.getMonth();
+
+  function async function loadCalendar() {
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    totalDays.textContent = daysInMonth;
+    monthYear.textContent = today.toLocaleString('default', { month: 'long' }) + ' ' + year;
+
+    calendarGrid.innerHTML = '';
+
+    const { data } = await supabaseClient
+      .from('attendance_records')
+      .select('*')
+      .eq('user_id', (await supabaseClient.auth.getUser()).data.user.id);
+
+    attendance = {};
+    data?.forEach(row => {
+      const d = new Date(row.attendance_date);
+      attendance[`${d.getDate()}-${d.getMonth()+1}-${d.getFullYear()}`] = row.status;
+    });() {
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    totalDays.textContent = daysInMonth;
+    monthYear.textContent = today.toLocaleString('default', { month: 'long' }) + ' ' + year;
+
+    calendarGrid.innerHTML = '';
+
+    for (let i = 0; i < firstDay; i++) {
+      const empty = document.createElement('div');
+      calendarGrid.appendChild(empty);
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayBox = document.createElement('div');
+      dayBox.className = 'day';
+      dayBox.textContent = day;
+
+      dayBox.onclick = () => {
+        selectedDate = `${day}-${month+1}-${year}`;
+        selectedDateSpan.textContent = selectedDate;
+        statusBox.style.display = 'block';
+      };
+
+      calendarGrid.appendChild(dayBox);
+    }
+  }
+
+  async function setStatus(status) {
+    attendance[selectedDate] = status;
+
+    const { data, error } = await supabaseClient
+      .from('attendance_records')
+      .upsert({
+        user_id: (await supabaseClient.auth.getUser()).data.user.id,
+        attendance_date: new Date(selectedDate.split('-').reverse().join('-')),
+        status: status
+      });
+
+    if (error) console.error(error);(status) {
+    attendance[selectedDate] = status;
+
+    const boxes = document.querySelectorAll('.day');
+
+    boxes.forEach(box => {
+      if (box.textContent == selectedDate.split('-')[0]) {
+        box.classList.remove('present', 'absent', 'leave');
+        if (status === 'Present') box.classList.add('present');
+        if (status === 'Absent') box.classList.add('absent');
+        if (status === 'Leave') box.classList.add('leave');
+      }
+    });
+
+    calculateTotals();
+  }
+
+  function calculateTotals() {
+    let p = 0, a = 0, l = 0;
+
+    Object.values(attendance).forEach(v => {
+      if (v === 'Present') p++;
+      if (v === 'Absent') a++;
+      if (v === 'Leave') l++;
+    });
+
+    totalPresent.textContent = p;
+    totalAbsent.textContent = a;
+    document.getElementById('totalLeave').textContent = l;
+  }
+
+  async function removeStatus() {
+    const dateObj = new Date(selectedDate.split('-').reverse().join('-'));
+    const user = (await supabaseClient.auth.getUser()).data.user.id;
+
+    await supabaseClient
+      .from('attendance_records')
+      .delete()
+      .eq('user_id', user)
+      .eq('attendance_date', dateObj);
+
+    delete attendance[selectedDate];() {
+    delete attendance[selectedDate];
+    const boxes = document.querySelectorAll('.day');
+    boxes.forEach(box => {
+      if (box.textContent == selectedDate.split('-')[0]) {
+        box.classList.remove('present','absent','leave');
+      }
+    });
+    calculateTotals();
+  }
+
+  function prevMonth(){ month--; if(month<0){ month=11; year--; } today.setMonth(month); today.setFullYear(year); loadCalendar(); }
+  function nextMonth(){ month++; if(month>11){ month=0; year++; } today.setMonth(month); today.setFullYear(year); loadCalendar(); }
+
+  loadCalendar();
+</script>
+
+</body>
+</html>
