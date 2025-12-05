@@ -950,11 +950,12 @@
                     <thead>
                         <tr>
                             <th style="width: 12%;">Receipt No</th>
-                            <th style="width: 15%;">Date</th>
-                            <th style="width: 12%;">Amount</th>
+                            <th style="width: 8%;">Date</th>
+                            <th style="width: 10%;">Amount</th>
                             <th style="width: 15%;">Mode</th>
-                            <th style="width: 20%;">Transaction ID</th>
-                            <th style="width: 10%;">Status</th>
+                            <th style="width: 18%;">Transaction ID</th>
+                            <th style="width: 13%;">Notes</th>
+                            <th style="width: 8%;">Status</th>
                             <th style="width: 16%;">Actions</th>
                         </tr>
                     </thead>
@@ -1194,7 +1195,8 @@
                             ${isToday ? ' <span style="color:#27ae60;font-size:0.7rem;">(Today)</span>' : ''}
                         </td>
                         <td><strong style="color: #27ae60;">₹${payment.amount}</strong></td>
-                        <td>${payment.payment_mode}</td>
+                         <td>${payment.payment_mode}</td>
+                        <td>${payment.notes}</td>
                         <td>${payment.transaction_id || 'N/A'}</td>
                         <td><span class="status-badge status-success">PAID</span></td>
                         <td>
@@ -1865,3 +1867,4 @@ function printNow() {
     </script>
 </body>
 </html>
+
